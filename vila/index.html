@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vila dos Canais — Dashboard Dark do Charlis</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; }
+  body {
+    font-family:"Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    background:#3d8b37; overflow:hidden; color:#1c2430;
+    -webkit-user-select:none; user-select:none;
+  }
+  #app { display:flex; flex-direction:column; height:100vh; height:100dvh; }
+
+  /* ============ HUD SUPERIOR (clara) ============ */
+  #hud {
+    background:linear-gradient(#ffffff,#eef1f4);
+    border-bottom:4px solid #14181f;
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:6px 10px; z-index:30; position:relative;
+    box-shadow:0 3px 0 rgba(0,0,0,.25);
+  }
+  #hud .logo { display:flex; align-items:center; gap:8px; font-weight:900; font-size:19px; letter-spacing:.3px; color:#14181f; white-space:nowrap; }
+  #hud .logo .house-ico { font-size:21px; }
+  #hud .tag-real { background:#e33; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; border:2px solid #14181f; }
+  .pill {
+    display:flex; align-items:center; gap:5px; background:#fff; border:2px solid #14181f;
+    border-radius:999px; padding:2px 10px 2px 7px; font-weight:800; font-size:14px; white-space:nowrap;
+    box-shadow:2px 2px 0 #14181f;
+  }
+  .pill small { display:block; font-size:9px; font-weight:700; color:#5a6675; line-height:1; }
+  .pill .num { font-size:16px; line-height:1; }
+  .pill.energy .bar { width:52px; height:9px; border:2px solid #14181f; border-radius:3px; background:#fff; overflow:hidden; }
+  .pill.energy .bar i { display:block; height:100%; background:#ffb300; width:25%; }
+  #hud .spacer { flex:1; }
+  .hbtn {
+    font-family:inherit; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap;
+    border:2px solid #14181f; border-radius:8px; padding:6px 11px; background:#fff; color:#14181f;
+    box-shadow:2px 2px 0 #14181f;
+  }
+  .hbtn:active { transform:translate(2px,2px); box-shadow:0 0 0 #14181f; }
+  .hbtn.blue { background:#4da3ff; color:#fff; }
+  .hbtn.green { background:#37b24d; color:#fff; }
+  .hbtn.purple { background:#7048e8; color:#fff; }
+  .hbtn .cnt { background:#fff; color:#14181f; border-radius:6px; padding:0 6px; margin-left:5px; border:2px solid #14181f; font-size:12px; }
+  .hint {
+    position:absolute; left:50%; transform:translateX(-50%); bottom:-24px;
+    background:rgba(20,24,31,.85); color:#fff; font-size:11px; font-weight:600;
+    padding:3px 12px; border-radius:999px; pointer-events:none; white-space:nowrap; z-index:5;
+  }
+
+  /* ============ LAYOUT ============ */
+  #main { display:flex; flex:1; min-height:0; }
+
+  /* ============ SIDEBAR (clara) ============ */
+  #sidebar {
+    width:228px; min-width:228px; background:linear-gradient(#fbfcfd,#edf0f3);
+    border-right:4px solid #14181f; overflow-y:auto; z-index:20;
+    display:flex; flex-direction:column; padding:10px 10px 12px;
+  }
+  #sidebar input[type=text] {
+    width:100%; padding:7px 9px; border:2px solid #14181f; border-radius:8px;
+    font-family:inherit; font-size:12px; margin-bottom:10px; background:#fff; outline:none;
+  }
+  .side-sec { margin-bottom:12px; }
+  .side-sec h3 {
+    font-size:11.5px; font-weight:900; color:#14181f; letter-spacing:.2px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-left:5px solid #4da3ff; padding-left:7px; margin-bottom:5px;
+  }
+  .side-sec h3 .n { color:#7a8694; font-weight:700; }
+  .side-sec.city h3 { border-left-color:#f08c00; }
+  .side-sec.houseblock h3 { border-left-color:#e8590c; }
+  .emp {
+    display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:#2b3542;
+    padding:2.5px 4px 2.5px 12px; border-radius:5px; cursor:pointer;
+  }
+  .emp:hover { background:#e3e9f0; }
+  .emp .dot { width:9px; height:9px; border-radius:50%; border:1.5px solid #14181f; flex:none; }
+  .emp .badge { margin-left:auto; background:#4da3ff; color:#fff; font-size:10px; font-weight:800; border-radius:999px; padding:0 6px; border:1.5px solid #14181f; }
+  .emp.hidden { display:none; }
+  .censored { filter:blur(5px); }
+  .side-alert {
+    background:#ffe066; border:2.5px solid #14181f; border-radius:10px; padding:8px 10px;
+    font-size:12px; font-weight:800; color:#5c4300; margin-top:auto; margin-bottom:8px;
+    box-shadow:2px 2px 0 #14181f;
+  }
+  .side-btn { width:100%; padding:9px; font-size:13.5px; margin-top:6px; }
+  .side-foot { font-size:10px; color:#7a8694; text-align:center; margin-top:8px; line-height:1.5; }
+
+  /* ============ CANVAS ============ */
+  #stage { flex:1; position:relative; min-width:0; background:#57a83e; }
+  #game { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:grab; image-rendering:pixelated; }
+  #game.dragging { cursor:grabbing; }
+
+  /* painel de detalhes da casa */
+  #detail {
+    position:absolute; top:14px; right:14px; width:264px; max-width:calc(100% - 28px);
+    background:#fff; border:3px solid #14181f; border-radius:12px; padding:13px 14px;
+    box-shadow:5px 5px 0 rgba(20,24,31,.55); z-index:15; display:none;
+  }
+  #detail.show { display:block; }
+  #detail h2 { font-size:16px; font-weight:900; margin-bottom:2px; }
+  #detail .sub { font-size:11.5px; color:#5a6675; font-weight:700; margin-bottom:9px; }
+  #detail .row { display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding:3.5px 0; border-bottom:1.5px dashed #d5dbe2; }
+  #detail .row b { font-size:14px; }
+  #detail .status-on { color:#2b8a3e; } #detail .status-off { color:#c22525; }
+  #detail a.yt {
+    display:block; margin-top:11px; text-align:center; background:#e33; color:#fff; text-decoration:none;
+    font-weight:800; font-size:13px; padding:8px; border-radius:8px; border:2.5px solid #14181f; box-shadow:2px 2px 0 #14181f;
+  }
+  #detail .close {
+    position:absolute; top:6px; right:8px; border:none; background:none; font-size:17px; font-weight:900; cursor:pointer; color:#14181f;
+  }
+  #detail .meta-bar { height:11px; border:2px solid #14181f; border-radius:4px; overflow:hidden; margin-top:4px; background:#eef1f4; }
+  #detail .meta-bar i { display:block; height:100%; background:#37b24d; }
+
+  /* ============ MODAL ============ */
+  #modal-bg {
+    position:fixed; inset:0; background:rgba(10,14,22,.55); z-index:50;
+    display:none; align-items:center; justify-content:center; padding:16px;
+  }
+  #modal-bg.show { display:flex; }
+  #modal {
+    background:#1b2436; color:#eef2f7; width:520px; max-width:100%; max-height:86vh; overflow-y:auto;
+    border:3.5px solid #0b0f16; border-radius:14px; padding:18px 18px 14px;
+    box-shadow:7px 7px 0 rgba(0,0,0,.5);
+  }
+  #modal h2 { font-size:18px; font-weight:900; margin-bottom:2px; }
+  #modal .msub { font-size:12px; color:#9fb0c3; font-weight:700; margin-bottom:12px; }
+  .pend {
+    background:#232f47; border:2px solid #0b0f16; border-radius:10px; padding:10px 12px; margin-bottom:9px;
+  }
+  .pend b { font-size:13.5px; display:block; margin-bottom:2px; }
+  .pend span { font-size:12px; color:#b9c7d8; line-height:1.45; display:block; }
+  .pend .tag { display:inline-block; margin-top:6px; font-size:10.5px; font-weight:800; background:#ffe066; color:#5c4300; padding:1.5px 8px; border-radius:999px; border:1.5px solid #0b0f16; }
+  .pend .tag.red { background:#ff8787; color:#5c1010; }
+  #modal .mclose {
+    width:100%; margin-top:5px; padding:10px; font-family:inherit; font-weight:800; font-size:14px;
+    background:#37b24d; color:#fff; border:2.5px solid #0b0f16; border-radius:9px; cursor:pointer; box-shadow:2px 2px 0 #0b0f16;
+  }
+  #toast {
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(80px);
+    background:#14181f; color:#fff; font-weight:800; font-size:13.5px; padding:10px 18px;
+    border-radius:10px; border:2.5px solid #fff; z-index:60; transition:transform .25s; pointer-events:none;
+    max-width:92vw; text-align:center;
+  }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+
+  @media (max-width:760px) {
+    #main { flex-direction:column; }
+    #sidebar { width:100%; min-width:0; max-height:212px; border-right:none; border-bottom:4px solid #14181f; }
+    #hud .logo { font-size:16px; }
+    .pill small { display:none; }
+    .hint { display:none; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= HUD ================= -->
+  <header id="hud">
+    <div class="logo"><span class="house-ico">🏠</span> Vila dos Canais <span class="tag-real">REAL</span></div>
+    <div class="pill">🏠 <span><span class="num" id="hud-casas">4</span><small>casas</small></span></div>
+    <div class="pill">🧑‍🤝‍🧑 <span><span class="num" id="hud-func">13</span><small>funcionários</small></span></div>
+    <div class="pill">⏰ <span><span class="num" id="hud-trab">1</span><small>trabalhando</small></span></div>
+    <div class="pill">✋ <span><span class="num">4</span><small>esperam seu OK</small></span></div>
+    <div class="pill">$ <span><span class="num">0</span><small>receita (sem AdSense ainda)</small></span></div>
+    <div class="pill energy">⚡ <span><span class="num" id="hud-energia">25%</span><small>energia · 1 de 4 casas ligadas</small></span><span class="bar"><i id="hud-energia-bar"></i></span></div>
+    <div class="spacer"></div>
+    <button class="hbtn blue" id="btn-caixa">📥 Caixa de aprovação <span class="cnt">4</span></button>
+    <button class="hbtn purple" id="btn-censura">Censura: LIGADA</button>
+    <button class="hbtn" id="btn-canal">+ Canal</button>
+    <button class="hbtn" id="btn-luzes">Luzes</button>
+    <button class="hbtn" id="btn-enquadrar">Enquadrar</button>
+    <button class="hbtn" id="btn-config">Config.</button>
+    <div class="hint">Arraste para mover · roda do mouse para zoom · clique numa casa, funcionário, lab ou na sala de energia</div>
+  </header>
+
+  <div id="main">
+    <!-- ================= SIDEBAR ================= -->
+    <aside id="sidebar">
+      <input type="text" id="busca" placeholder="Buscar funcionário ou canal...">
+      <div class="side-sec">
+        <h3>Laboratório de Pesquisa <span class="n">2</span></h3>
+        <div class="emp" data-nome="cacador de nichos severo"><span class="dot" style="background:#4da3ff"></span>Caçador de Nichos</div>
+        <div class="emp" data-nome="analista de viabilidade perito"><span class="dot" style="background:#51cf66"></span>Analista de Viabilidade</div>
+      </div>
+      <div class="side-sec city">
+        <h3>Cidade (fora das casas) <span class="n">5</span></h3>
+        <div class="emp" data-nome="pedreiro"><span class="dot" style="background:#f08c00"></span>Pedreiro</div>
+        <div class="emp" data-nome="demolidor"><span class="dot" style="background:#e03131"></span>Demolidor</div>
+        <div class="emp" data-nome="analista de desempenho decio"><span class="dot" style="background:#868e96"></span>Analista de Desempenho</div>
+        <div class="emp" data-nome="carteiro"><span class="dot" style="background:#4da3ff"></span>Carteiro</div>
+        <div class="emp" data-nome="shorteiro"><span class="dot" style="background:#f08c00"></span>Shorteiro</div>
+      </div>
+      <div id="side-houses"></div>
+      <div class="side-alert">⚠ Atenção! Você tem <b>4 itens</b> na caixa de aprovação pra revisar.</div>
+      <button class="hbtn blue side-btn" id="btn-correio">✉ Enviar Correio</button>
+      <button class="hbtn green side-btn" id="btn-postar">✔ Postar Tudo</button>
+      <div class="side-foot">Esquadrão da Fusão · 13 agentes únicos<br>Dados reais via API · 25/nov/2026</div>
+    </aside>
+
+    <!-- ================= VILA ================= -->
+    <div id="stage">
+      <canvas id="game"></canvas>
+      <div id="detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL ================= -->
+<div id="modal-bg">
+  <div id="modal">
+    <h2 id="modal-title">📥 Caixa de Aprovação</h2>
+    <div class="msub" id="modal-sub">Nada publica sem o seu OK — regra da casa.</div>
+    <div id="modal-body"></div>
+    <button class="mclose" id="modal-close">Entendi</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   VILA DOS CANAIS — vila pixel-art viva (canvas, sem bibliotecas)
+   Dados REAIS dos canais em 25/nov/2026 (API do YouTube). Nada inventado.
+   ===================================================================== */
+
+/* ---------- dados reais ---------- */
+var ROLES = [
+  { nome:"Designer",   cor:"#f06595", cabelo:"#3b2f2f" },
+  { nome:"Pauteiro",   cor:"#fab005", cabelo:"#14181f" },
+  { nome:"Roteirista", cor:"#9775fa", cabelo:"#5f3dc4" },
+  { nome:"Narrador",   cor:"#f783ac", cabelo:"#862e9c" },
+  { nome:"Editor",     cor:"#20c997", cabelo:"#0b7285" },
+  { nome:"Auditor",    cor:"#ff6b6b", cabelo:"#7a1f1f" }
+];
+var STAGES = ["Roteiro","Voz/Thumb","Edição","Auditoria","Prontos"];
+
+var HOUSES = [
+  { id:1, nome:"Dinero Claro", canal:"Finanças · ES", cor:"#e8590c", corClara:"#ff922b",
+    on:true, inscritos:9, views:8929, videos:33, entregues:33,
+    esteira:[0,0,2,0,33], status:"ON — produzindo",
+    nota:"Longos seg/qua/sex/dom 18:30. Gargalo: inscritos e longos fracos (views vieram dos Shorts).",
+    url:"https://www.youtube.com/channel/UCiGynFK0iSLijgcuknx9TnA" },
+  { id:2, nome:"Empire Obituaries", canal:"Obituários de impérios · EN", cor:"#e64980", corClara:"#f783ac",
+    on:false, inscritos:0, views:16, videos:4, entregues:4,
+    esteira:[0,0,0,0,4], status:"OFF — parado há 2 semanas",
+    nota:"Último vídeo: 'OpenAI Almost Died 3 Times' (0 views). Decisão pendente: retomar cadência ou pausar o save.",
+    url:"https://www.youtube.com/channel/UCrlD02DeBiTZQdAiBXeWHCQ" },
+  { id:3, nome:"Wren & Friends", canal:"Infantil · EN (save lateral)", cor:"#37b24d", corClara:"#69db7c",
+    on:true, dorme:false, inscritos:0, views:3, videos:2, entregues:2,
+    esteira:[0,0,0,0,2], status:"ON — ritmo lento (infantil)",
+    nota:"Canal infantil, fora da régua dark. Método pedido-contrato nas próximas produções.",
+    url:"https://www.youtube.com/channel/UCpadokFST5REm_eedKhAY_Q" },
+  { id:4, nome:"Quiet Storefront", canal:"Lavanderias · EN (DLC bloqueada)", cor:"#1c7ed6", corClara:"#4dabf7",
+    on:false, inscritos:0, views:5, videos:1, entregues:1,
+    esteira:[0,0,0,0,1], status:"OFF — sem produção ativa",
+    nota:"DLC bloqueada por regra do mapa dos canais: sem produção até decisão do Charlis.",
+    url:"https://www.youtube.com/channel/UCD-jxiQT-npqE5tD8-9bhuA" }
+];
+
+var PENDENCIAS = [
+  { t:"Leonida 005 — aguarda seu OK", d:"Primeiro longo no molde Luskas (PS5 vs Xbox) fechado e no portão. Nada publicado ainda.", tag:"AGUARDA OK" },
+  { t:"kai-06 a kai-15 — aguardam seu OK", d:"10 clipes do lote 005 (Kai Cenat, linha EN) prontos e no Drive, esperando liberação pra grade 11:30/17:30.", tag:"AGUARDA OK" },
+  { t:"Empire Obituaries — decisão pendente", d:"Canal parado há 2 semanas (0 inscritos, 16 views). Retomar a cadência ou pausar o save oficialmente?", tag:"DECISÃO", red:true },
+  { t:"Reautorização YouTube — escopo Analytics", d:"Tokens renovados em 25/nov (valem até ~02/dez), mas sem o escopo yt-analytics.readonly: horas assistidas seguem sem leitura.", tag:"ACESSO", red:true }
+];
+
+/* ---------- mundo ---------- */
+var WORLD = { w:3060, h:1420 };
+var HOUSE_W = 540, HOUSE_H = 740, HOUSE_Y = 430;
+var HOUSE_X = [40, 640, 1240, 1840];
+var LOT_X = 2440;
+var STREET1_Y = 300, STREET_H = 92;
+var STREET2_Y = 1215;
+var LAB = { x:60,   y:36, w:430, h:214, nome:"LABORATÓRIO DE PESQUISA" };
+var SERVIDOR = { x:540, y:36, w:400, h:214, nome:"SERVIDOR" };
+var CORREIO = { x:990, y:36, w:430, h:214, nome:"CORREIO" };
+var PRACA = { x:1470, y:30, w:1530, h:226 };
+
+/* ---------- canvas / câmera ---------- */
+var canvas = document.getElementById("game");
+var ctx = canvas.getContext("2d");
+var cam = { x:0, y:0, z:0.5 };
+var night = false;
+var T = 0; /* relógio global da animação */
+
+function resize() {
+  var r = canvas.parentElement.getBoundingClientRect();
+  canvas.width = Math.max(320, Math.floor(r.width));
+  canvas.height = Math.max(320, Math.floor(r.height));
+}
+window.addEventListener("resize", resize);
+
+function frameWorld() {
+  var z = Math.min(canvas.width / WORLD.w, canvas.height / WORLD.h);
+  cam.z = z;
+  cam.x = (WORLD.w - canvas.width / z) / 2;
+  cam.y = (WORLD.h - canvas.height / z) / 2;
+  clampCam();
+}
+function clampCam() {
+  var vw = canvas.width / cam.z, vh = canvas.height / cam.z;
+  cam.x = Math.max(-80, Math.min(WORLD.w - vw + 80, cam.x));
+  cam.y = Math.max(-60, Math.min(WORLD.h - vh + 60, cam.y));
+}
+function toWorld(px, py) { return { x: px / cam.z + cam.x, y: py / cam.z + cam.y }; }
+
+/* ---------- helpers de desenho pixel ---------- */
+function R(x, y, w, h, cor, borda) {
+  ctx.fillStyle = cor; ctx.fillRect(x, y, w, h);
+  if (borda) { ctx.strokeStyle = "#14181f"; ctx.lineWidth = 3; ctx.strokeRect(x, y, w, h); }
+}
+function TXT(s, x, y, size, cor, align, outline) {
+  ctx.font = "900 " + size + "px 'Segoe UI', system-ui, Arial, sans-serif";
+  ctx.textAlign = align || "left"; ctx.textBaseline = "middle";
+  if (outline !== false) {
+    ctx.lineWidth = Math.max(3, size / 5); ctx.strokeStyle = "#14181f"; ctx.lineJoin = "round";
+    ctx.strokeText(s, x, y);
+  }
+  ctx.fillStyle = cor || "#fff"; ctx.fillText(s, x, y);
+}
+function seeded(n) { var v = Math.sin(n * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); }
+
+/* =====================================================================
+   DESENHO DO MUNDO
+   ===================================================================== */
+var glows = []; /* pontos de luz pro modo noite */
+
+function drawGrass() {
+  ctx.fillStyle = "#57a83e"; ctx.fillRect(0, 0, WORLD.w, WORLD.h);
+  var gx, gy, i;
+  for (gx = 0; gx < WORLD.w; gx += 46) {
+    for (gy = 0; gy < WORLD.h; gy += 46) {
+      var s = seeded(gx * 3.7 + gy * 9.1);
+      if (s > 0.55) { ctx.fillStyle = "#4c9a35"; ctx.fillRect(gx + (s * 20 % 22), gy + (s * 30 % 22), 13, 7); }
+      if (s > 0.86) { ctx.fillStyle = "#66bb46"; ctx.fillRect(gx + 8, gy + 26, 18, 9); }
+      if (s > 0.93) { ctx.fillStyle = "#ffd43b"; ctx.fillRect(gx + 20, gy + 10, 5, 5); ctx.fillStyle = "#fff"; ctx.fillRect(gx + 27, gy + 18, 4, 4); }
+    }
+  }
+  i = 0;
+}
+
+function drawTree(x, y, s) {
+  s = s || 1;
+  R(x - 6 * s, y, 12 * s, 20 * s, "#8a5a2b");
+  ctx.fillStyle = "#2f9e44";
+  ctx.fillRect(x - 30 * s, y - 46 * s, 60 * s, 34 * s);
+  ctx.fillRect(x - 22 * s, y - 58 * s, 44 * s, 14 * s);
+  ctx.fillStyle = "#37b24d";
+  ctx.fillRect(x - 24 * s, y - 40 * s, 20 * s, 16 * s);
+  ctx.fillStyle = "#2b8a3e";
+  ctx.fillRect(x + 8 * s, y - 30 * s, 16 * s, 12 * s);
+  ctx.strokeStyle = "#14181f"; ctx.lineWidth = 3;
+  ctx.strokeRect(x - 30 * s, y - 46 * s, 60 * s, 34 * s);
+}
+function drawLamp(x, y) {
+  R(x - 3, y - 64, 6, 64, "#212529");
+  R(x - 11, y - 76, 22, 14, night ? "#ffe066" : "#ced4da", true);
+  if (night) glows.push({ x: x, y: y - 69, r: 60, c: "255,224,102" });
+}
+function drawBench(x, y) {
+  R(x, y, 52, 8, "#a9743f", true);
+  R(x, y - 14, 52, 8, "#a9743f", true);
+  R(x + 5, y + 8, 7, 12, "#5c3d1e"); R(x + 40, y + 8, 7, 12, "#5c3d1e");
+}
+function drawBush(x, y) {
+  ctx.fillStyle = "#2f9e44"; ctx.fillRect(x, y, 44, 24); ctx.fillRect(x + 8, y - 10, 28, 12);
+  ctx.fillStyle = "#40c057"; ctx.fillRect(x + 6, y + 4, 12, 9);
+  ctx.strokeStyle = "#14181f"; ctx.lineWidth = 2.5; ctx.strokeRect(x, y, 44, 24);
+}
+
+function drawBuildingBase(b, parede) {
+  R(b.x - 6, b.y - 6, b.w + 12, b.h + 12, "#14181f");
+  R(b.x, b.y, b.w, b.h, parede);
+  R(b.x, b.y, b.w, 40, "#343a40", true);
+  TXT(b.nome, b.x + b.w / 2, b.y + 21, 17, "#fff", "center");
+}
+function drawLab() {
+  drawBuildingBase(LAB, "#e9ecef");
+  var i, x;
+  for (i = 0; i < 3; i++) {
+    x = LAB.x + 26 + i * 138;
+    R(x, LAB.y + 62, 108, 74, night ? "#ffe066" : "#a5d8ff", true);
+    R(x + 8, LAB.y + 116, 92, 8, "#1c7ed6");
+    R(x + 14, LAB.y + 74, 26, 30, "#74c0fc");
+  }
+  R(LAB.x + 178, LAB.y + 158, 74, 56, "#868e96", true);
+  TXT("🔬 PESQUISA", LAB.x + LAB.w / 2, LAB.y + 186, 15, "#14181f", "center", false);
+  if (night) glows.push({ x: LAB.x + LAB.w / 2, y: LAB.y + 100, r: 120, c: "255,224,102" });
+}
+function drawServidor() {
+  drawBuildingBase(SERVIDOR, "#495057");
+  var i, r, c;
+  for (r = 0; r < 3; r++) for (c = 0; c < 5; c++) {
+    var on = seeded(r * 17 + c * 31 + Math.floor(T * 2)) > 0.35;
+    R(SERVIDOR.x + 24 + c * 72, SERVIDOR.y + 58 + r * 38, 54, 26, "#212529", true);
+    ctx.fillStyle = on ? "#51cf66" : "#e03131";
+    ctx.fillRect(SERVIDOR.x + 32 + c * 72, SERVIDOR.y + 66 + r * 38, 8, 8);
+    ctx.fillStyle = "#74c0fc"; ctx.fillRect(SERVIDOR.x + 46 + c * 72, SERVIDOR.y + 66 + r * 38, 22, 5);
+  }
+  TXT("ENERGIA", SERVIDOR.x + 24, SERVIDOR.y + 186, 14, "#fff", "left", false);
+  R(SERVIDOR.x + 104, SERVIDOR.y + 176, 250, 18, "#212529", true);
+  ctx.fillStyle = "#ffb300"; ctx.fillRect(SERVIDOR.x + 107, SERVIDOR.y + 179, 244 * 0.25, 12);
+  TXT("25%", SERVIDOR.x + 366, SERVIDOR.y + 186, 14, "#ffe066", "left", false);
+  i = 0;
+}
+function drawCorreio() {
+  drawBuildingBase(CORREIO, "#f8f9fa");
+  R(CORREIO.x + 30, CORREIO.y + 60, 150, 66, "#e03131", true);
+  TXT("✉ CORREIO", CORREIO.x + 105, CORREIO.y + 93, 17, "#fff", "center");
+  var bob = Math.sin(T * 2.2) * 3;
+  R(CORREIO.x + 216, CORREIO.y + 58 + bob, 184, 42, "#ffe066", true);
+  TXT("PACOTES PRONTOS", CORREIO.x + 308, CORREIO.y + 72 + bob, 12.5, "#14181f", "center", false);
+  TXT("PRA POSTAR 📦", CORREIO.x + 308, CORREIO.y + 90 + bob, 12.5, "#14181f", "center", false);
+  R(CORREIO.x + 168, CORREIO.y + 150, 94, 64, "#a9743f", true);
+  R(CORREIO.x + 204, CORREIO.y + 150, 22, 64, "#14181f");
+  var i; for (i = 0; i < 4; i++) R(CORREIO.x + 36 + i * 42, CORREIO.y + 152, 30, 40, night ? "#ffe066" : "#a5d8ff", true);
+}
+function drawPraca() {
+  R(PRACA.x, PRACA.y, PRACA.w, PRACA.h, "#4c9a35");
+  ctx.strokeStyle = "#14181f"; ctx.lineWidth = 3; ctx.strokeRect(PRACA.x, PRACA.y, PRACA.w, PRACA.h);
+  drawTree(PRACA.x + 130, PRACA.y + 130, 1.25);
+  drawTree(PRACA.x + 430, PRACA.y + 120, 1.1);
+  drawTree(PRACA.x + 760, PRACA.y + 135, 1.3);
+  drawTree(PRACA.x + 1090, PRACA.y + 118, 1.05);
+  drawTree(PRACA.x + 1400, PRACA.y + 132, 1.2);
+  drawBench(PRACA.x + 250, PRACA.y + 150);
+  drawBench(PRACA.x + 620, PRACA.y + 160);
+  drawBench(PRACA.x + 950, PRACA.y + 148);
+  drawBench(PRACA.x + 1260, PRACA.y + 158);
+  TXT("PRAÇA DA VILA", PRACA.x + PRACA.w / 2, PRACA.y + 42, 19, "#fff", "center");
+}
+
+function drawStreet(y) {
+  R(-40, y - 16, WORLD.w + 80, 16, "#ced4da");
+  R(-40, y, WORLD.w + 80, STREET_H, "#495057");
+  R(-40, y + STREET_H, WORLD.w + 80, 16, "#ced4da");
+  ctx.fillStyle = "#ffd43b";
+  var x; for (x = -20; x < WORLD.w + 40; x += 90) ctx.fillRect(x, y + STREET_H / 2 - 3, 46, 6);
+  ctx.fillStyle = "rgba(0,0,0,.13)";
+  for (x = 0; x < WORLD.w; x += 210) ctx.fillRect(x + (y % 97), y + 14 + (x % 40), 30, 7);
+}
+
+function drawCar(c) {
+  var x = c.x, y = c.y, flip = c.dir < 0;
+  ctx.save(); ctx.translate(x, y); if (flip) ctx.scale(-1, 1);
+  R(-34, -16, 68, 22, c.cor, true);
+  R(-20, -30, 38, 16, c.cor, true);
+  R(-15, -27, 13, 10, night ? "#ffe066" : "#a5d8ff");
+  R(3, -27, 12, 10, night ? "#ffe066" : "#a5d8ff");
+  ctx.fillStyle = "#14181f";
+  ctx.beginPath(); ctx.arc(-19, 8, 8.5, 0, 7); ctx.arc(20, 8, 8.5, 0, 7); ctx.fill();
+  ctx.fillStyle = "#adb5bd";
+  ctx.beginPath(); ctx.arc(-19, 8, 3.6, 0, 7); ctx.arc(20, 8, 3.6, 0, 7); ctx.fill();
+  R(32, -10, 5, 7, "#ffe066");
+  ctx.restore();
+  if (night) glows.push({ x: x + 40 * c.dir, y: y - 6, r: 46, c: "255,224,102" });
+}
+
+/* ---------- personagem chibi de blocos ---------- */
+function drawChar(x, y, opt) {
+  /* opt: cor (camisa), cabelo, walk (0..1 fase ou -1 parado), sit, sleep, scale */
+  var s = opt.scale || 1, bob = 0, legA = 0, legB = 0;
+  if (opt.walk >= 0) { var ph = opt.walk * Math.PI * 2; legA = Math.sin(ph) * 6; legB = -legA; bob = Math.abs(Math.sin(ph)) * -2; }
+  if (opt.sit) bob = Math.sin(T * 3 + x) * 1.4;
+  y += bob * s;
+  /* pernas */
+  if (!opt.sit) {
+    R(x - 9 * s + legA * s * 0.5, y + 22 * s, 7 * s, 11 * s, "#343a40");
+    R(x + 2 * s + legB * s * 0.5, y + 22 * s, 7 * s, 11 * s, "#343a40");
+  }
+  /* corpo */
+  R(x - 11 * s, y + 6 * s, 22 * s, 17 * s, opt.cor, true);
+  /* cabeça */
+  var hy = y - 13 * s + (opt.sleep ? 4 * s : 0);
+  R(x - 10 * s, hy, 20 * s, 19 * s, "#f1c27d", true);
+  R(x - 10 * s, hy, 20 * s, 6 * s, opt.cabelo);
+  if (opt.sleep) {
+    R(x - 6 * s, hy + 11 * s, 4 * s, 2.6 * s, "#14181f");
+    R(x + 3 * s, hy + 11 * s, 4 * s, 2.6 * s, "#14181f");
+  } else {
+    R(x - 6 * s, hy + 9 * s, 3.4 * s, 4.4 * s, "#14181f");
+    R(x + 3 * s, hy + 9 * s, 3.4 * s, 4.4 * s, "#14181f");
+  }
+  if (opt.pkg) { R(x + 10 * s, y + 8 * s, 15 * s, 13 * s, "#e8b04b", true); TXT("▶", x + 17.5 * s, y + 14.5 * s, 9 * s, "#14181f", "center", false); }
+}
+
+/* ---------- casa-canal ---------- */
+var deskPos = []; /* preenchido por casa: [{x,y}] centros das mesas (mundo) */
+function houseDesk(hx, i) {
+  var col = i % 3, row = Math.floor(i / 3);
+  return { x: hx + 108 + col * 162, y: HOUSE_Y + 372 + row * 178 };
+}
+
+function drawHouse(h, hx) {
+  var hy = HOUSE_Y, i;
+  deskPos[h.id] = [];
+  for (i = 0; i < 6; i++) deskPos[h.id].push(houseDesk(hx, i));
+
+  /* moldura + telhado */
+  R(hx - 7, hy - 7, HOUSE_W + 14, HOUSE_H + 14, "#4dabf7");
+  R(hx, hy, HOUSE_W, HOUSE_H, "#f3e2c7", true);
+  R(hx, hy, HOUSE_W, 58, h.cor, true);
+  TXT("CASA " + h.id, hx + 20, hy + 30, 27, "#fff", "left");
+  ctx.save();
+  if (censuraOn) { ctx.shadowColor = "#fff"; ctx.shadowBlur = 14; }
+  TXT(h.nome.toUpperCase(), hx + 168, hy + 30, 19, "#fff", "left");
+  ctx.restore();
+  /* interruptor ON/OFF */
+  var swx = hx + HOUSE_W - 86, swy = hy + 12;
+  R(swx, swy, 70, 34, h.on ? "#37b24d" : "#868e96", true);
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(swx + (h.on ? 52 : 18), swy + 17, 11, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#14181f"; ctx.lineWidth = 2.5; ctx.stroke();
+  TXT(h.on ? "ON" : "OFF", swx + (h.on ? 22 : 46), swy + 18, 13, "#fff", "center", false);
+
+  /* piso de madeira */
+  R(hx + 4, hy + 292, HOUSE_W - 8, HOUSE_H - 296, "#d9a066");
+  ctx.fillStyle = "rgba(120,72,20,.35)";
+  var py; for (py = hy + 330; py < hy + HOUSE_H - 6; py += 38) ctx.fillRect(hx + 6, py, HOUSE_W - 12, 3);
+  var pxx; for (pxx = hx + 70; pxx < hx + HOUSE_W - 10; pxx += 132) ctx.fillRect(pxx, hy + 296, 3, HOUSE_H - 300);
+  R(hx + 4, hy + 282, HOUSE_W - 8, 12, "#868e96");
+
+  /* TV com barras de teste */
+  var tvx = hx + 22, tvy = hy + 78;
+  R(tvx - 4, tvy + 92, 128, 12, "#7a4a21", true);
+  R(tvx, tvy, 120, 92, "#14181f", true);
+  if (h.on) {
+    var bars = ["#ffd43b", "#22d3ee", "#51cf66", "#f06595", "#e03131", "#4dabf7"];
+    for (i = 0; i < 6; i++) { ctx.fillStyle = bars[i]; ctx.fillRect(tvx + 6 + i * 18, tvy + 6, 18, 62); }
+    ctx.fillStyle = "#fff"; ctx.fillRect(tvx + 8, tvy + 76, 34 + Math.sin(T * 6) * 6, 7);
+    if (night) glows.push({ x: tvx + 60, y: tvy + 46, r: 70, c: "165,216,255" });
+  } else {
+    for (i = 0; i < 130; i++) { ctx.fillStyle = seeded(i * 7 + Math.floor(T * 9)) > 0.5 ? "#868e96" : "#495057"; ctx.fillRect(tvx + 5 + (i % 13) * 8.4, tvy + 5 + Math.floor(i / 13) * 8.4, 7, 7); }
+  }
+  TXT("TV", tvx + 60, tvy - 8, 12, "#14181f", "center", false);
+
+  /* THUMBS 2x2 */
+  var thx = hx + 158, thy = hy + 78;
+  R(thx, thy, 104, 92, "#fff", true);
+  var tc = ["#f783ac", "#4dabf7", "#ffd43b", "#9775fa"];
+  for (i = 0; i < 4; i++) {
+    R(thx + 7 + (i % 2) * 47, thy + 7 + Math.floor(i / 2) * 40, 40, 33, tc[i]);
+    ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.fillRect(thx + 12 + (i % 2) * 47, thy + 12 + Math.floor(i / 2) * 40, 18, 5);
+  }
+  TXT("THUMBS", thx + 52, thy - 8, 12, "#14181f", "center", false);
+
+  /* NOTA DA SEMANA (sem Analytics = "—", honesto) */
+  var nx = hx + HOUSE_W - 96, ny = hy + 78;
+  R(nx, ny, 76, 92, "#212529", true);
+  TXT("NOTA DA", nx + 38, ny + 16, 10.5, "#adb5bd", "center", false);
+  TXT("SEMANA", nx + 38, ny + 30, 10.5, "#adb5bd", "center", false);
+  TXT("—", nx + 38, ny + 62, 34, "#fff", "center", false);
+
+  /* ESTEIRA DE VÍDEOS */
+  var ex = hx + 276, ey = hy + 78, ew = 148;
+  R(ex, ey, ew, 92, "#fff", true);
+  TXT("ESTEIRA", ex + ew / 2, ey + 13, 11, "#14181f", "center", false);
+  for (i = 0; i < 5; i++) {
+    var bx = ex + 6 + i * 28, val = h.esteira[i];
+    R(bx, ey + 24, 24, 30, val > 0 ? (i === 4 ? "#37b24d" : "#4dabf7") : "#e9ecef", true);
+    TXT(String(val), bx + 12, ey + 40, 14, val > 0 ? "#fff" : "#868e96", "center", false);
+  }
+  TXT("Roteiro·Voz·Edição·Audit.·Prontos", ex + ew / 2, ey + 70, 8.5, "#5a6675", "center", false);
+  /* pacotinho andando na esteira da Casa 1 */
+  if (h.id === 1) {
+    var pt = (T % 6) / 6, px2 = ex + 8 + pt * (ew - 26);
+    R(px2, ey + 26 + Math.sin(T * 7) * 1.5, 15, 13, "#e8b04b", true);
+    TXT("▶", px2 + 7.5, ey + 33 + Math.sin(T * 7) * 1.5, 9, "#14181f", "center", false);
+  }
+
+  /* mesas */
+  for (i = 0; i < 6; i++) {
+    var d = deskPos[h.id][i], role = ROLES[i];
+    /* etiqueta da função */
+    var lw = role.nome.length * 9.5 + 18;
+    R(d.x - lw / 2, d.y - 88, lw, 25, "#fff", true);
+    ctx.fillStyle = role.cor; ctx.fillRect(d.x - lw / 2 + 4, d.y - 84, 5, 17);
+    TXT(role.nome, d.x + 4, d.y - 75, 14.5, "#14181f", "center", false);
+    /* mesa */
+    R(d.x - 66, d.y + 16, 132, 15, "#a9743f", true);
+    R(d.x - 58, d.y + 31, 10, 26, "#7a4a21"); R(d.x + 48, d.y + 31, 10, 26, "#7a4a21");
+    /* monitor */
+    var monOn = h.on;
+    R(d.x - 27, d.y - 34, 54, 40, "#14181f", true);
+    if (monOn) {
+      var flick = 0.75 + Math.sin(T * 5 + i * 2.1) * 0.25;
+      ctx.fillStyle = "rgba(90,170,255," + flick.toFixed(2) + ")"; ctx.fillRect(d.x - 22, d.y - 29, 44, 30);
+      ctx.fillStyle = "rgba(255,255,255,.85)";
+      ctx.fillRect(d.x - 17, d.y - 23, 24, 4); ctx.fillRect(d.x - 17, d.y - 15, 32, 4); ctx.fillRect(d.x - 17, d.y - 7, 18, 4);
+      if (night) glows.push({ x: d.x, y: d.y - 14, r: 44, c: "120,180,255" });
+    } else {
+      ctx.fillStyle = "#2b2f36"; ctx.fillRect(d.x - 22, d.y - 29, 44, 30);
+    }
+    R(d.x - 5, d.y + 6, 10, 10, "#495057");
+    /* papéis e caixinha sobre a mesa */
+    R(d.x + 34, d.y + 8, 20, 7, "#fff", true);
+    R(d.x - 56, d.y + 4, 13, 11, role.cor, true);
+  }
+
+  /* porta */
+  R(hx + HOUSE_W / 2 - 30, hy + HOUSE_H - 64, 60, 64, "#7a4a21", true);
+  R(hx + HOUSE_W / 2 - 22, hy + HOUSE_H - 56, 44, 26, night ? "#ffe066" : "#a5d8ff");
+  if (night) glows.push({ x: hx + HOUSE_W / 2, y: hy + HOUSE_H - 40, r: 55, c: "255,224,102" });
+
+  /* botão Finalizar? (só Casa 1) */
+  if (h.id === 1) {
+    var pulse = 1 + Math.sin(T * 3.2) * 0.03;
+    ctx.save(); ctx.translate(hx + HOUSE_W - 108, hy + HOUSE_H - 118); ctx.scale(pulse, pulse);
+    R(-76, -22, 152, 44, "#ffd43b", true);
+    TXT("Finalizar?", 0, 2, 21, "#14181f", "center", false);
+    ctx.restore();
+  }
+  /* placa da casa OFF */
+  if (!h.on) {
+    R(hx + 18, hy + HOUSE_H - 52, 196, 34, "#fff", true);
+    TXT(h.id === 2 ? "💤 parado há 2 semanas" : "🔒 sem produção ativa", hx + 116, hy + HOUSE_H - 34, 13, "#14181f", "center", false);
+  }
+}
+
+function drawLot() {
+  var x = LOT_X, y = HOUSE_Y;
+  ctx.save();
+  ctx.setLineDash([16, 12]); ctx.lineWidth = 5; ctx.strokeStyle = "#2b8a3e";
+  ctx.strokeRect(x, y, HOUSE_W, HOUSE_H);
+  ctx.restore();
+  R(x + 130, y + 300, 280, 74, "#d3f9d8", true);
+  TXT("+ NOVO CANAL", x + HOUSE_W / 2, y + 338, 27, "#2b8a3e", "center", false);
+  TXT("lote vazio — aguardando decisão", x + HOUSE_W / 2, y + 420, 15, "#2b8a3e", "center", false);
+  drawBush(x + 60, y + 120); drawBush(x + 420, y + 560); drawTree(x + 470, y + 180, 0.9);
+}
+
+/* =====================================================================
+   AGENTES — personagens com ciclo de estados:
+   work (sentado digitando) → walk (anda até um destino) → idle → volta
+   Casas OFF: dormem na mesa com "Z z" flutuando.
+   ===================================================================== */
+var agents = [];
+function makeAgent(house, roleIdx) {
+  var hx = HOUSE_X[house.id - 1];
+  var d = houseDesk(hx, roleIdx);
+  var role = ROLES[roleIdx];
+  var a = {
+    house: house, role: role, roleIdx: roleIdx,
+    deskX: d.x, deskY: d.y - 2, x: d.x, y: d.y - 2,
+    state: house.on ? "work" : "sleep",
+    t: 3 + Math.random() * 9, path: null, pi: 0, phase: Math.random() * 10,
+    pkg: false, speed: 118
+  };
+  agents.push(a); return a;
+}
+HOUSES.forEach(function (h) { for (var i = 0; i < 6; i++) makeAgent(h, i); });
+
+/* destinos das viagens (pontos do mundo) */
+function doorOf(house) { var hx = HOUSE_X[house.id - 1]; return { x: hx + HOUSE_W / 2, y: HOUSE_Y + HOUSE_H + 26 }; }
+function tripFor(a) {
+  var h = a.house, hx = HOUSE_X[h.id - 1], door = doorOf(h);
+  if (a.role.nome === "Pauteiro" && h.id === 1)
+    return [door, { x: door.x, y: 404 }, { x: LAB.x + LAB.w / 2, y: 404 }, { x: LAB.x + LAB.w / 2, y: LAB.y + LAB.h + 22 }];
+  if (a.role.nome === "Editor" && h.id === 1)
+    return [{ x: hx + 350, y: HOUSE_Y + 210 }]; /* leva o vídeo até a esteira */
+  if (a.role.nome === "Roteirista" && h.id === 1)
+    return [door, { x: door.x, y: 404 }, { x: CORREIO.x + CORREIO.w / 2, y: 404 }, { x: CORREIO.x + CORREIO.w / 2, y: CORREIO.y + CORREIO.h + 22 }];
+  if (a.role.nome === "Designer" && h.id === 1)
+    return [{ x: hx + 210, y: HOUSE_Y + 210 }]; /* confere as thumbs */
+  if (a.role.nome === "Auditor" && h.id === 3)
+    return [{ x: hx + 350, y: HOUSE_Y + 210 }];
+  return null;
+}
+function startWalk(a, path, pkg) {
+  a.path = [{ x: a.x, y: a.y }].concat(path);
+  a.pi = 1; a.state = "walk"; a.pkg = !!pkg;
+}
+function agentUpdate(a, dt) {
+  a.t -= dt;
+  if (a.state === "sleep") return;
+  if (a.state === "work") {
+    if (a.t <= 0) {
+      var trip = tripFor(a);
+      if (trip && Math.random() < 0.75) { startWalk(a, trip, a.role.nome === "Editor" || a.role.nome === "Roteirista"); a.ida = true; }
+      else a.t = 4 + Math.random() * 8;
+    }
+    return;
+  }
+  if (a.state === "idle") {
+    if (a.t <= 0) { /* monta o caminho de volta (inverte) */
+      a.path = a.path.slice().reverse(); a.pi = 1; a.state = "walkBack";
+    }
+    return;
+  }
+  if (a.state === "walk" || a.state === "walkBack") {
+    var target = a.path[a.pi];
+    if (!target) { finishWalk(a); return; }
+    var dx = target.x - a.x, dy = target.y - a.y, dist = Math.hypot(dx, dy);
+    var step = a.speed * dt;
+    if (dist <= step) { a.x = target.x; a.y = target.y; a.pi++; if (a.pi >= a.path.length) finishWalk(a); }
+    else { a.x += dx / dist * step; a.y += dy / dist * step; }
+    a.phase += dt * 7;
+  }
+}
+function finishWalk(a) {
+  if (a.state === "walk") { a.state = "idle"; a.t = 1.6 + Math.random() * 1.6; }
+  else { a.state = "work"; a.t = 5 + Math.random() * 9; a.pkg = false; a.x = a.deskX; a.y = a.deskY; }
+}
+function drawAgent(a) {
+  var walking = (a.state === "walk" || a.state === "walkBack");
+  if (a.state === "sleep" || a.state === "work" || a.state === "idle" && !walking && a.x === a.deskX) {
+    drawChar(a.x, a.y, { cor: a.role.cor, cabelo: a.role.cabelo, walk: -1, sit: true, sleep: a.state === "sleep", pkg: false });
+    if (a.state === "sleep") {
+      var ph = (T * 0.9 + a.phase) % 1;
+      ctx.globalAlpha = 1 - ph;
+      TXT("Z", a.x + 16 + ph * 10, a.y - 34 - ph * 22, 15 + ph * 6, "#4dabf7", "center");
+      ctx.globalAlpha = 1;
+      TXT("z", a.x + 26, a.y - 30 - ((T * 0.9 + a.phase + 0.4) % 1) * 16, 11, "#4dabf7", "center");
+    }
+    return;
+  }
+  drawChar(a.x, a.y - 14, { cor: a.role.cor, cabelo: a.role.cabelo, walk: walking ? a.phase : -1, sit: false, sleep: false, pkg: a.pkg, scale: 1.05 });
+  /* nome flutuante de quem está andando */
+  TXT(a.role.nome, a.x, a.y - 52, 12.5, "#fff", "center");
+}
+
+/* ---------- carteiro (agente da cidade) ---------- */
+var carteiro = { x: CORREIO.x + CORREIO.w / 2, y: CORREIO.y + CORREIO.h + 24, state: "idle", t: 4, path: null, pi: 0, phase: 0, pkg: true, speed: 150, cor: "#4da3ff", cabelo: "#14181f" };
+function carteiroTrip() {
+  var door = doorOf(HOUSES[0]);
+  return [{ x: carteiro.x, y: 404 }, { x: door.x, y: 404 }, door];
+}
+function carteiroUpdate(dt) {
+  carteiro.t -= dt;
+  if (carteiro.state === "idle" && carteiro.t <= 0) {
+    carteiro.path = [{ x: carteiro.x, y: carteiro.y }].concat(carteiroTrip());
+    carteiro.pi = 1; carteiro.state = "walk";
+  } else if ((carteiro.state === "walk" || carteiro.state === "walkBack")) {
+    var target = carteiro.path[carteiro.pi];
+    if (!target) { carteiro.state = carteiro.state === "walk" ? "deliver" : "idle"; carteiro.t = carteiro.state === "deliver" ? 2.2 : 5 + Math.random() * 6; if (carteiro.state === "idle") { carteiro.x = CORREIO.x + CORREIO.w / 2; carteiro.y = CORREIO.y + CORREIO.h + 24; } return; }
+    var dx = target.x - carteiro.x, dy = target.y - carteiro.y, dist = Math.hypot(dx, dy), step = carteiro.speed * dt;
+    if (dist <= step) { carteiro.x = target.x; carteiro.y = target.y; carteiro.pi++; if (carteiro.pi >= carteiro.path.length) { carteiro.state = carteiro.state === "walk" ? "deliver" : "idle"; carteiro.t = carteiro.state === "deliver" ? 2.2 : 6; if (carteiro.state === "idle") { carteiro.x = CORREIO.x + CORREIO.w / 2; carteiro.y = CORREIO.y + CORREIO.h + 24; } } }
+    else { carteiro.x += dx / dist * step; carteiro.y += dy / dist * step; }
+    carteiro.phase += dt * 7.5;
+  } else if (carteiro.state === "deliver" && carteiro.t <= 0) {
+    carteiro.path = [{ x: carteiro.x, y: carteiro.y }].concat(carteiroTrip().reverse());
+    carteiro.pi = 1; carteiro.state = "walkBack"; carteiro.pkg = false;
+  }
+}
+function drawCarteiro() {
+  var walking = carteiro.state === "walk" || carteiro.state === "walkBack";
+  drawChar(carteiro.x, carteiro.y - 14, { cor: carteiro.cor, cabelo: carteiro.cabelo, walk: walking ? carteiro.phase : -1, sit: false, sleep: false, pkg: carteiro.state === "walk", scale: 1.05 });
+  TXT("Carteiro", carteiro.x, carteiro.y - 52, 12.5, "#fff", "center");
+}
+
+/* ---------- carros e pedestres ---------- */
+var cars = [
+  { x: 300, y: STREET1_Y + 26, dir: 1, speed: 120, cor: "#e03131" },
+  { x: 1500, y: STREET1_Y + 66, dir: -1, speed: 100, cor: "#1c7ed6" },
+  { x: 2400, y: STREET1_Y + 26, dir: 1, speed: 88, cor: "#f8f9fa" },
+  { x: 800, y: STREET2_Y + 26, dir: 1, speed: 105, cor: "#fab005" },
+  { x: 2100, y: STREET2_Y + 66, dir: -1, speed: 128, cor: "#7048e8" }
+];
+var peds = [];
+(function () {
+  var cores = ["#f06595", "#fab005", "#9775fa", "#20c997", "#ff6b6b", "#4dabf7"];
+  for (var i = 0; i < 7; i++) {
+    peds.push({
+      x: seeded(i * 13.3) * WORLD.w, y: i % 2 ? STREET1_Y - 24 : STREET2_Y - 24,
+      dir: i % 3 ? 1 : -1, speed: 34 + seeded(i * 7) * 30, phase: Math.random() * 10,
+      cor: cores[i % cores.length], cabelo: ["#14181f", "#5c3d1e", "#868e96", "#e8590c"][i % 4]
+    });
+  }
+})();
+
+/* =====================================================================
+   LOOP PRINCIPAL
+   ===================================================================== */
+function render() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = "#3d8b37"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
+  glows = [];
+
+  drawGrass();
+  drawLab(); drawServidor(); drawCorreio(); drawPraca();
+  drawStreet(STREET1_Y);
+  HOUSES.forEach(function (h, idx) { drawHouse(h, HOUSE_X[idx]); });
+  drawLot();
+  drawStreet(STREET2_Y);
+
+  /* enfeites sobre a grama */
+  drawTree(300, 1370, 1); drawTree(1050, 1380, 1.15); drawTree(1750, 1368, 0.95); drawTree(2560, 1378, 1.1);
+  drawLamp(620, 296); drawLamp(1560, 296); drawLamp(2480, 296);
+  drawLamp(620, 1208); drawLamp(1560, 1208); drawLamp(2480, 1208);
+  drawBush(560, 1252); drawBush(1480, 1258); drawBush(2380, 1250);
+
+  /* agentes sentados/andando dentro das casas */
+  agents.forEach(function (a) { if (a.state !== "walk" && a.state !== "walkBack") drawAgent(a); });
+  agents.forEach(function (a) { if (a.state === "walk" || a.state === "walkBack") drawAgent(a); });
+  drawCarteiro();
+  peds.forEach(function (p) { drawChar(p.x, p.y - 14, { cor: p.cor, cabelo: p.cabelo, walk: p.phase, sit: false, sleep: false, scale: 0.95 }); });
+  cars.forEach(drawCar);
+
+  /* modo noite */
+  if (night) {
+    ctx.fillStyle = "rgba(8,12,48,.48)"; ctx.fillRect(cam.x - 60, cam.y - 60, canvas.width / cam.z + 120, canvas.height / cam.z + 120);
+    glows.forEach(function (g) {
+      var gr = ctx.createRadialGradient(g.x, g.y, 2, g.x, g.y, g.r);
+      gr.addColorStop(0, "rgba(" + g.c + ",.5)"); gr.addColorStop(1, "rgba(" + g.c + ",0)");
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(g.x, g.y, g.r, 0, 7); ctx.fill();
+    });
+  }
+}
+var lastTs = 0;
+function loop(ts) {
+  var dt = Math.min(0.05, (ts - lastTs) / 1000 || 0.016); lastTs = ts; T += dt;
+  agents.forEach(function (a) { agentUpdate(a, dt); });
+  carteiroUpdate(dt);
+  cars.forEach(function (c) {
+    c.x += c.dir * c.speed * dt;
+    if (c.dir > 0 && c.x > WORLD.w + 70) c.x = -70;
+    if (c.dir < 0 && c.x < -70) c.x = WORLD.w + 70;
+  });
+  peds.forEach(function (p) {
+    p.x += p.dir * p.speed * dt; p.phase += dt * 6;
+    if (p.x > WORLD.w + 30) p.x = -30; if (p.x < -30) p.x = WORLD.w + 30;
+  });
+  render();
+  requestAnimationFrame(loop);
+}
+
+/* =====================================================================
+   INTERAÇÃO — câmera, clique, botões
+   ===================================================================== */
+var drag = null, moved = 0;
+function ptrPos(e) { var r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+canvas.addEventListener("pointerdown", function (e) {
+  drag = ptrPos(e); moved = 0; canvas.classList.add("dragging"); canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener("pointermove", function (e) {
+  if (!drag) return;
+  var p = ptrPos(e), dx = p.x - drag.x, dy = p.y - drag.y;
+  moved += Math.abs(dx) + Math.abs(dy);
+  cam.x -= dx / cam.z; cam.y -= dy / cam.z; clampCam(); drag = p;
+});
+canvas.addEventListener("pointerup", function (e) {
+  canvas.classList.remove("dragging");
+  var wasDrag = moved > 7; drag = null;
+  if (!wasDrag) handleClick(ptrPos(e));
+});
+canvas.addEventListener("wheel", function (e) {
+  e.preventDefault();
+  var p = ptrPos(e), before = toWorld(p.x, p.y);
+  cam.z = Math.max(0.22, Math.min(2.4, cam.z * (e.deltaY < 0 ? 1.13 : 0.885)));
+  var after = toWorld(p.x, p.y);
+  cam.x += before.x - after.x; cam.y += before.y - after.y; clampCam();
+}, { passive: false });
+
+var detailEl = document.getElementById("detail");
+function fmt(n) { return n.toLocaleString("pt-BR"); }
+function showDetail(h) {
+  var pct = (h.inscritos / 1000 * 100);
+  detailEl.innerHTML =
+    '<button class="close" id="detail-close">✕</button>' +
+    "<h2>Casa " + h.id + " — " + h.nome + "</h2>" +
+    '<div class="sub">' + h.canal + "</div>" +
+    '<div class="row"><span>Status</span><b class="' + (h.on ? "status-on" : "status-off") + '">' + h.status + "</b></div>" +
+    '<div class="row"><span>Inscritos</span><b>' + fmt(h.inscritos) + "</b></div>" +
+    '<div class="row"><span>Views totais</span><b>' + fmt(h.views) + "</b></div>" +
+    '<div class="row"><span>Vídeos publicados</span><b>' + h.videos + "</b></div>" +
+    '<div class="row"><span>Boss 1 — monetização</span><b>' + pct.toFixed(1).replace(".", ",") + "%</b></div>" +
+    '<div class="meta-bar"><i style="width:' + Math.max(1.5, pct) + '%"></i></div>' +
+    '<div class="row"><span>Faltam</span><b>' + fmt(1000 - h.inscritos) + " inscritos</b></div>" +
+    '<div class="row"><span>Nota da semana</span><b>— (sem Analytics)</b></div>' +
+    '<p style="font-size:12px;color:#5a6675;line-height:1.5;margin-top:8px">' + h.nota + "</p>" +
+    '<a class="yt" target="_blank" rel="noopener" href="' + h.url + '">▶ Abrir canal no YouTube</a>';
+  detailEl.classList.add("show");
+  document.getElementById("detail-close").onclick = function () { detailEl.classList.remove("show"); };
+}
+function handleClick(p) {
+  var w = toWorld(p.x, p.y), i, h, hx;
+  /* botão Finalizar? da Casa 1 */
+  hx = HOUSE_X[0];
+  if (w.x > hx + HOUSE_W - 190 && w.x < hx + HOUSE_W - 26 && w.y > HOUSE_Y + HOUSE_H - 144 && w.y < HOUSE_Y + HOUSE_H - 92) { openCaixa(); return; }
+  for (i = 0; i < HOUSES.length; i++) {
+    h = HOUSES[i]; hx = HOUSE_X[i];
+    if (w.x >= hx && w.x <= hx + HOUSE_W && w.y >= HOUSE_Y && w.y <= HOUSE_Y + HOUSE_H) { showDetail(h); return; }
+  }
+  if (w.x >= LOT_X && w.x <= LOT_X + HOUSE_W && w.y >= HOUSE_Y && w.y <= HOUSE_Y + HOUSE_H) {
+    toast("🏗 Lote vazio: novo canal só entra com decisão do Charlis.");
+    return;
+  }
+  detailEl.classList.remove("show");
+}
+
+/* ---------- modal / caixa de aprovação ---------- */
+var modalBg = document.getElementById("modal-bg");
+function openCaixa() {
+  document.getElementById("modal-title").textContent = "📥 Caixa de Aprovação";
+  document.getElementById("modal-sub").textContent = "Nada publica sem o seu OK — regra da casa. 4 itens esperando.";
+  document.getElementById("modal-body").innerHTML = PENDENCIAS.map(function (p) {
+    return '<div class="pend"><b>' + p.t + '</b><span>' + p.d + '</span><span class="tag' + (p.red ? " red" : "") + '">' + p.tag + "</span></div>";
+  }).join("");
+  modalBg.classList.add("show");
+}
+function openConfig() {
+  document.getElementById("modal-title").textContent = "⚙ Configuração da Vila";
+  document.getElementById("modal-sub").textContent = "De onde vêm os números deste painel.";
+  document.getElementById("modal-body").innerHTML =
+    '<div class="pend"><b>Fonte dos dados</b><span>YouTube Data API, leitura de 25/nov/2026 ~10:10 BRT, com os tokens renovados dos 5 canais da conta Luana.</span><span class="tag">REAL</span></div>' +
+    '<div class="pend"><b>Horas assistidas</b><span>Sem leitura: os tokens não têm o escopo yt-analytics.readonly. Por isso a Nota da Semana mostra "—" em todas as casas — nada inventado.</span><span class="tag red">PENDENTE</span></div>' +
+    '<div class="pend"><b>Energia da vila</b><span>Energia = casas em produção plena. Hoje: 1 de 4 (Dinero Claro) = 25%. Empire OFF, Quiet bloqueada, Wren em ritmo lento.</span><span class="tag">REGRA</span></div>' +
+    '<div class="pend"><b>Próximo placar</b><span>Placar oficial do Dark Game sai toda segunda, junto do relatório semanal, sempre com números reais.</span><span class="tag">CADÊNCIA</span></div>';
+  modalBg.classList.add("show");
+}
+document.getElementById("modal-close").onclick = function () { modalBg.classList.remove("show"); };
+modalBg.addEventListener("click", function (e) { if (e.target === modalBg) modalBg.classList.remove("show"); });
+
+/* ---------- toast ---------- */
+var toastEl = document.getElementById("toast"), toastTimer = null;
+function toast(msg) {
+  toastEl.textContent = msg; toastEl.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 3400);
+}
+
+/* ---------- botões do HUD ---------- */
+var censuraOn = true;
+document.getElementById("btn-caixa").onclick = openCaixa;
+document.getElementById("btn-config").onclick = openConfig;
+document.getElementById("btn-censura").onclick = function () {
+  censuraOn = !censuraOn;
+  this.textContent = censuraOn ? "Censura: LIGADA" : "Censura: DESLIGADA";
+  document.querySelectorAll(".hname").forEach(function (el) { el.classList.toggle("censored", censuraOn); });
+  toast(censuraOn ? "🙈 Censura LIGADA: nomes das casas borrados na lista." : "👀 Censura desligada: nomes visíveis.");
+};
+document.getElementById("btn-luzes").onclick = function () {
+  night = !night;
+  toast(night ? "🌙 Modo noite: janelas e monitores acesos." : "☀ Modo dia de volta.");
+};
+document.getElementById("btn-enquadrar").onclick = frameWorld;
+document.getElementById("btn-canal").onclick = function () {
+  cam.z = Math.max(cam.z, 0.62);
+  cam.x = LOT_X + HOUSE_W / 2 - (canvas.width / cam.z) / 2;
+  cam.y = HOUSE_Y + HOUSE_H / 2 - (canvas.height / cam.z) / 2;
+  clampCam();
+  toast("🏗 Este é o lote do próximo canal. Criar canal novo precisa da sua decisão.");
+};
+document.getElementById("btn-correio").onclick = function () {
+  if (carteiro.state === "idle") { carteiro.t = 0; toast("✉ Carteiro despachado pra Casa 1 (Dinero Claro)."); }
+  else toast("✉ O Carteiro já está na rua.");
+};
+document.getElementById("btn-postar").onclick = function () {
+  toast("⛔ Nada posta sem passar pela Caixa de Aprovação.");
+  openCaixa();
+};
+
+/* ---------- sidebar: blocos das casas + busca ---------- */
+(function buildSidebar() {
+  var wrap = document.getElementById("side-houses");
+  HOUSES.forEach(function (h) {
+    var sec = document.createElement("div");
+    sec.className = "side-sec houseblock";
+    var rows = ROLES.map(function (r) {
+      return '<div class="emp" data-nome="' + r.nome.toLowerCase() + " " + h.nome.toLowerCase() + '"><span class="dot" style="background:' + r.cor + '"></span>' + r.nome + "</div>";
+    }).join("");
+    sec.innerHTML = "<h3><span class='hname censored'>Casa " + h.id + " · " + h.nome + "</span><span class='n'>" + h.entregues + " entregues</span></h3>" + rows;
+    wrap.appendChild(sec);
+  });
+  document.querySelectorAll("#sidebar .emp").forEach(function (el) {
+    el.addEventListener("click", function () {
+      var nome = el.getAttribute("data-nome") || "";
+      if (nome.indexOf("carteiro") >= 0) document.getElementById("btn-correio").click();
+      else toast("🧑 " + el.textContent.trim() + " — agente do Esquadrão da Fusão.");
+    });
+  });
+  document.getElementById("busca").addEventListener("input", function () {
+    var q = this.value.trim().toLowerCase();
+    document.querySelectorAll("#sidebar .emp").forEach(function (el) {
+      el.classList.toggle("hidden", !!q && (el.getAttribute("data-nome") || "").indexOf(q) < 0 && el.textContent.toLowerCase().indexOf(q) < 0);
+    });
+  });
+})();
+
+/* ---------- start ---------- */
+resize();
+frameWorld();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
