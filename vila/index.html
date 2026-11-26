@@ -33,7 +33,7 @@
   .pill small { display:block; font-size:9px; font-weight:700; color:#5a6675; line-height:1; }
   .pill .num { font-size:16px; line-height:1; }
   .pill.energy .bar { width:52px; height:9px; border:2px solid #14181f; border-radius:3px; background:#fff; overflow:hidden; }
-  .pill.energy .bar i { display:block; height:100%; background:#ffb300; width:25%; }
+  .pill.energy .bar i { display:block; height:100%; background:#ffb300; width:67%; }
   #hud .spacer { flex:1; }
   .hbtn {
     font-family:inherit; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap;
@@ -203,12 +203,12 @@
   <!-- ================= HUD ================= -->
   <header id="hud">
     <div class="logo"><span class="house-ico">🏠</span> Vila dos Canais <span class="tag-real">REAL</span></div>
-    <div class="pill">🏠 <span><span class="num" id="hud-casas">4</span><small>casas</small></span></div>
+    <div class="pill">🏠 <span><span class="num" id="hud-casas">9</span><small>casas</small></span></div>
     <div class="pill">🧑‍🤝‍🧑 <span><span class="num" id="hud-func">13</span><small>funcionários</small></span></div>
     <div class="pill">⏰ <span><span class="num" id="hud-trab">1</span><small>trabalhando</small></span></div>
     <div class="pill">✋ <span><span class="num">4</span><small>esperam seu OK</small></span></div>
     <div class="pill">$ <span><span class="num">0</span><small>receita (sem AdSense ainda)</small></span></div>
-    <div class="pill energy">⚡ <span><span class="num" id="hud-energia">25%</span><small>energia · 1 de 4 casas ligadas</small></span><span class="bar"><i id="hud-energia-bar"></i></span></div>
+    <div class="pill energy">⚡ <span><span class="num" id="hud-energia">67%</span><small>energia · 6 de 9 casas ligadas</small></span><span class="bar"><i id="hud-energia-bar"></i></span></div>
     <div class="spacer"></div>
     <button class="hbtn blue" id="btn-caixa">📥 Caixa de aprovação <span class="cnt">4</span></button>
     <button class="hbtn purple" id="btn-censura">Censura: LIGADA</button>
@@ -244,7 +244,7 @@
       <div class="side-alert">⚠ Atenção! Você tem <b>4 itens</b> na caixa de aprovação pra revisar.</div>
       <button class="hbtn blue side-btn" id="btn-correio">✉ Enviar Correio</button>
       <button class="hbtn green side-btn" id="btn-postar">✔ Postar Tudo</button>
-      <div class="side-foot">Esquadrão da Fusão · 13 agentes únicos<br>Dados reais via API · 25/nov/2026</div>
+      <div class="side-foot">Esquadrão da Fusão · 13 agentes únicos<br>Dados reais · Dark via API 25/nov · GTA/Cortes público 26/nov</div>
     </aside>
 
     <!-- ================= VILA ================= -->
@@ -270,7 +270,7 @@
 "use strict";
 /* =====================================================================
    VILA DOS CANAIS — vila pixel-art viva (canvas, sem bibliotecas)
-   Dados REAIS dos canais em 25/nov/2026 (API do YouTube). Nada inventado.
+   Dados REAIS: Dark via API 25/nov/2026 · GTA/Cortes público 26/nov/2026. Nada inventado.
    ===================================================================== */
 
 /* ---------- dados reais ---------- */
@@ -304,7 +304,32 @@ var HOUSES = [
     on:false, inscritos:0, views:5, videos:1, entregues:1,
     esteira:[0,0,0,0,1], status:"OFF — sem produção ativa",
     nota:"DLC bloqueada por regra do mapa dos canais: sem produção até decisão do Charlis.",
-    url:"https://www.youtube.com/channel/UCD-jxiQT-npqE5tD8-9bhuA" }
+    url:"https://www.youtube.com/channel/UCD-jxiQT-npqE5tD8-9bhuA" },
+  { id:5, nome:"Leonida Central EN", canal:"GTA · EN", cor:"#7048e8", corClara:"#9775fa",
+    on:true, inscritos:null, views:18, videos:4, entregues:4, y:1345,
+    esteira:[0,0,0,0,4], status:"ON — grade diária ativa",
+    nota:"Linha GTA em inglês (Leonida Central). Dados públicos da página do canal, 26/nov/2026: inscritos não exibidos publicamente.",
+    url:"https://www.youtube.com/channel/UCFPeA7BlXDceZoBKpMRZRxg" },
+  { id:6, nome:"Leonida Central ES", canal:"GTA · ES", cor:"#0b7285", corClara:"#22b8cf",
+    on:true, inscritos:null, views:4, videos:4, entregues:4, y:1345,
+    esteira:[0,0,0,0,4], status:"ON — grade diária ativa",
+    nota:"Linha GTA em espanhol (Leonida Central). Dados públicos da página do canal, 26/nov/2026: inscritos não exibidos publicamente.",
+    url:"https://www.youtube.com/channel/UC97vACVRDBp6eBgKDHGzC-w" },
+  { id:7, nome:"Leonida Central PT", canal:"GTA · PT", cor:"#0ca678", corClara:"#38d9a9",
+    on:true, inscritos:null, views:4, videos:4, entregues:4, y:1345,
+    esteira:[0,0,0,0,4], status:"ON — grade diária ativa",
+    nota:"Linha GTA em português (Leonida Central). Dados públicos da página do canal, 26/nov/2026: inscritos não exibidos publicamente.",
+    url:"https://www.youtube.com/channel/UCFtrvSQp9Y-_c-8rXeG4RxA" },
+  { id:8, nome:"Leonida Clips", canal:"Cortes · EN", cor:"#f59f00", corClara:"#ffd43b",
+    on:true, inscritos:5, views:5853, videos:10, entregues:10, y:1345,
+    esteira:[0,0,0,0,10], status:"ON — postando todo dia",
+    nota:"Linha de cortes em inglês (Leonida Clips). Dados públicos da página do canal, 26/nov/2026.",
+    url:"https://www.youtube.com/channel/UCUkhSXHq5qYoUeQsbm05quQ" },
+  { id:9, nome:"Leonida Cortes", canal:"Cortes · PT", cor:"#f76707", corClara:"#ffa94d",
+    on:true, inscritos:9, views:10932, videos:13, entregues:13, y:1345,
+    esteira:[0,0,0,0,13], status:"ON — postando todo dia",
+    nota:"Linha de cortes em português (Leonida Cortes). Dados públicos da página do canal, 26/nov/2026.",
+    url:"https://www.youtube.com/channel/UCDzR-NkdBF8WskBl-d7kFQg" }
 ];
 
 var PENDENCIAS = [
@@ -315,12 +340,13 @@ var PENDENCIAS = [
 ];
 
 /* ---------- mundo ---------- */
-var WORLD = { w:3060, h:1420 };
+var WORLD = { w:3060, h:2270 };
 var HOUSE_W = 540, HOUSE_H = 740, HOUSE_Y = 430;
-var HOUSE_X = [40, 640, 1240, 1840];
+var HOUSE_X = [40, 640, 1240, 1840, 40, 640, 1240, 1840, 2440];
 var LOT_X = 2440;
 var STREET1_Y = 300, STREET_H = 92;
 var STREET2_Y = 1215;
+var STREET3_Y = 2130;
 var LAB = { x:60,   y:36, w:430, h:214, nome:"LABORATÓRIO DE PESQUISA" };
 var SERVIDOR = { x:540, y:36, w:400, h:214, nome:"SERVIDOR" };
 var CORREIO = { x:990, y:36, w:430, h:214, nome:"CORREIO" };
@@ -457,8 +483,8 @@ function drawServidor() {
   }
   TXT("ENERGIA", SERVIDOR.x + 24, SERVIDOR.y + 186, 14, "#fff", "left", false);
   R(SERVIDOR.x + 104, SERVIDOR.y + 176, 250, 18, "#212529", true);
-  ctx.fillStyle = "#ffb300"; ctx.fillRect(SERVIDOR.x + 107, SERVIDOR.y + 179, 244 * 0.25, 12);
-  TXT("25%", SERVIDOR.x + 366, SERVIDOR.y + 186, 14, "#ffe066", "left", false);
+  ctx.fillStyle = "#ffb300"; ctx.fillRect(SERVIDOR.x + 107, SERVIDOR.y + 179, 244 * 0.67, 12);
+  TXT("67%", SERVIDOR.x + 366, SERVIDOR.y + 186, 14, "#ffe066", "left", false);
   i = 0;
 }
 function drawCorreio() {
@@ -544,15 +570,15 @@ function drawChar(x, y, opt) {
 
 /* ---------- casa-canal ---------- */
 var deskPos = []; /* preenchido por casa: [{x,y}] centros das mesas (mundo) */
-function houseDesk(hx, i) {
+function houseDesk(hx, i, hy) {
   var col = i % 3, row = Math.floor(i / 3);
-  return { x: hx + 108 + col * 162, y: HOUSE_Y + 372 + row * 178 };
+  return { x: hx + 108 + col * 162, y: (hy || HOUSE_Y) + 372 + row * 178 };
 }
 
 function drawHouse(h, hx) {
-  var hy = HOUSE_Y, i;
+  var hy = h.y || HOUSE_Y, i;
   deskPos[h.id] = [];
-  for (i = 0; i < 6; i++) deskPos[h.id].push(houseDesk(hx, i));
+  for (i = 0; i < 6; i++) deskPos[h.id].push(houseDesk(hx, i, hy));
 
   /* moldura + telhado */
   R(hx - 7, hy - 7, HOUSE_W + 14, HOUSE_H + 14, "#4dabf7");
@@ -694,7 +720,7 @@ function drawLot() {
 var agents = [];
 function makeAgent(house, roleIdx) {
   var hx = HOUSE_X[house.id - 1];
-  var d = houseDesk(hx, roleIdx);
+  var d = houseDesk(hx, roleIdx, house.y || HOUSE_Y);
   var role = ROLES[roleIdx];
   var a = {
     house: house, role: role, roleIdx: roleIdx,
@@ -708,7 +734,7 @@ function makeAgent(house, roleIdx) {
 HOUSES.forEach(function (h) { for (var i = 0; i < 6; i++) makeAgent(h, i); });
 
 /* destinos das viagens (pontos do mundo) */
-function doorOf(house) { var hx = HOUSE_X[house.id - 1]; return { x: hx + HOUSE_W / 2, y: HOUSE_Y + HOUSE_H + 26 }; }
+function doorOf(house) { var hx = HOUSE_X[house.id - 1]; return { x: hx + HOUSE_W / 2, y: (house.y || HOUSE_Y) + HOUSE_H + 26 }; }
 function tripFor(a) {
   var h = a.house, hx = HOUSE_X[h.id - 1], door = doorOf(h);
   if (a.role.nome === "Pauteiro" && h.id === 1)
@@ -811,14 +837,16 @@ var cars = [
   { x: 1500, y: STREET1_Y + 66, dir: -1, speed: 100, cor: "#1c7ed6" },
   { x: 2400, y: STREET1_Y + 26, dir: 1, speed: 88, cor: "#f8f9fa" },
   { x: 800, y: STREET2_Y + 26, dir: 1, speed: 105, cor: "#fab005" },
-  { x: 2100, y: STREET2_Y + 66, dir: -1, speed: 128, cor: "#7048e8" }
+  { x: 2100, y: STREET2_Y + 66, dir: -1, speed: 128, cor: "#7048e8" },
+  { x: 500, y: STREET3_Y + 26, dir: 1, speed: 112, cor: "#0ca678" },
+  { x: 1900, y: STREET3_Y + 66, dir: -1, speed: 96, cor: "#e8590c" }
 ];
 var peds = [];
 (function () {
   var cores = ["#f06595", "#fab005", "#9775fa", "#20c997", "#ff6b6b", "#4dabf7"];
   for (var i = 0; i < 7; i++) {
     peds.push({
-      x: seeded(i * 13.3) * WORLD.w, y: i % 2 ? STREET1_Y - 24 : STREET2_Y - 24,
+      x: seeded(i * 13.3) * WORLD.w, y: [STREET1_Y, STREET2_Y, STREET3_Y][i % 3] - 24,
       dir: i % 3 ? 1 : -1, speed: 34 + seeded(i * 7) * 30, phase: Math.random() * 10,
       cor: cores[i % cores.length], cabelo: ["#14181f", "#5c3d1e", "#868e96", "#e8590c"][i % 4]
     });
@@ -840,11 +868,13 @@ function render() {
   HOUSES.forEach(function (h, idx) { drawHouse(h, HOUSE_X[idx]); });
   drawLot();
   drawStreet(STREET2_Y);
+  drawStreet(STREET3_Y);
 
   /* enfeites sobre a grama */
-  drawTree(300, 1370, 1); drawTree(1050, 1380, 1.15); drawTree(1750, 1368, 0.95); drawTree(2560, 1378, 1.1);
+  drawTree(300, 2245, 1); drawTree(1050, 2252, 1.15); drawTree(1750, 2242, 0.95); drawTree(2560, 2250, 1.1);
   drawLamp(620, 296); drawLamp(1560, 296); drawLamp(2480, 296);
   drawLamp(620, 1208); drawLamp(1560, 1208); drawLamp(2480, 1208);
+  drawLamp(620, 2123); drawLamp(1560, 2123); drawLamp(2480, 2123);
   drawBush(560, 1252); drawBush(1480, 1258); drawBush(2380, 1250);
 
   /* agentes sentados/andando dentro das casas */
@@ -912,18 +942,22 @@ canvas.addEventListener("wheel", function (e) {
 var detailEl = document.getElementById("detail");
 function fmt(n) { return n.toLocaleString("pt-BR"); }
 function showDetail(h) {
-  var pct = (h.inscritos / 1000 * 100);
+  var temInsc = typeof h.inscritos === "number";
+  var pct = temInsc ? (h.inscritos / 1000 * 100) : 0;
+  var bossHtml = temInsc ?
+    '<div class="row"><span>Boss 1 — monetização</span><b>' + pct.toFixed(1).replace(".", ",") + "%</b></div>" +
+    '<div class="meta-bar"><i style="width:' + Math.max(1.5, pct) + '%"></i></div>' +
+    '<div class="row"><span>Faltam</span><b>' + fmt(1000 - h.inscritos) + " inscritos</b></div>" :
+    '<div class="row"><span>Boss 1 — monetização</span><b>inscritos não exibidos publicamente</b></div>';
   detailEl.innerHTML =
     '<button class="close" id="detail-close">✕</button>' +
     "<h2>Casa " + h.id + " — " + h.nome + "</h2>" +
     '<div class="sub">' + h.canal + "</div>" +
     '<div class="row"><span>Status</span><b class="' + (h.on ? "status-on" : "status-off") + '">' + h.status + "</b></div>" +
-    '<div class="row"><span>Inscritos</span><b>' + fmt(h.inscritos) + "</b></div>" +
+    '<div class="row"><span>Inscritos</span><b>' + (temInsc ? fmt(h.inscritos) : "—") + "</b></div>" +
     '<div class="row"><span>Views totais</span><b>' + fmt(h.views) + "</b></div>" +
     '<div class="row"><span>Vídeos publicados</span><b>' + h.videos + "</b></div>" +
-    '<div class="row"><span>Boss 1 — monetização</span><b>' + pct.toFixed(1).replace(".", ",") + "%</b></div>" +
-    '<div class="meta-bar"><i style="width:' + Math.max(1.5, pct) + '%"></i></div>' +
-    '<div class="row"><span>Faltam</span><b>' + fmt(1000 - h.inscritos) + " inscritos</b></div>" +
+    bossHtml +
     '<div class="row"><span>Nota da semana</span><b>— (sem Analytics)</b></div>' +
     '<p style="font-size:12px;color:#5a6675;line-height:1.5;margin-top:8px">' + h.nota + "</p>" +
     '<a class="yt" target="_blank" rel="noopener" href="' + h.url + '">▶ Abrir canal no YouTube</a>';
@@ -937,7 +971,8 @@ function handleClick(p) {
   if (w.x > hx + HOUSE_W - 190 && w.x < hx + HOUSE_W - 26 && w.y > HOUSE_Y + HOUSE_H - 144 && w.y < HOUSE_Y + HOUSE_H - 92) { openCaixa(); return; }
   for (i = 0; i < HOUSES.length; i++) {
     h = HOUSES[i]; hx = HOUSE_X[i];
-    if (w.x >= hx && w.x <= hx + HOUSE_W && w.y >= HOUSE_Y && w.y <= HOUSE_Y + HOUSE_H) { showDetail(h); return; }
+    var hy2 = h.y || HOUSE_Y;
+    if (w.x >= hx && w.x <= hx + HOUSE_W && w.y >= hy2 && w.y <= hy2 + HOUSE_H) { showDetail(h); return; }
   }
   if (w.x >= LOT_X && w.x <= LOT_X + HOUSE_W && w.y >= HOUSE_Y && w.y <= HOUSE_Y + HOUSE_H) {
     toast("🏗 Lote vazio: novo canal só entra com decisão do Charlis.");
@@ -960,9 +995,9 @@ function openConfig() {
   document.getElementById("modal-title").textContent = "⚙ Configuração da Vila";
   document.getElementById("modal-sub").textContent = "De onde vêm os números deste painel.";
   document.getElementById("modal-body").innerHTML =
-    '<div class="pend"><b>Fonte dos dados</b><span>YouTube Data API, leitura de 25/nov/2026 ~10:10 BRT, com os tokens renovados dos 5 canais da conta Luana.</span><span class="tag">REAL</span></div>' +
+    '<div class="pend"><b>Fonte dos dados</b><span>Canais Dark: YouTube Data API, leitura de 25/nov/2026 ~10:10 BRT. Canais GTA e de cortes: páginas públicas dos canais, leitura de 26/nov/2026 (inscritos das Leonida Central não são exibidos publicamente).</span><span class="tag">REAL</span></div>' +
     '<div class="pend"><b>Horas assistidas</b><span>Sem leitura: os tokens não têm o escopo yt-analytics.readonly. Por isso a Nota da Semana mostra "—" em todas as casas — nada inventado.</span><span class="tag red">PENDENTE</span></div>' +
-    '<div class="pend"><b>Energia da vila</b><span>Energia = casas em produção plena. Hoje: 1 de 4 (Dinero Claro) = 25%. Empire OFF, Quiet bloqueada, Wren em ritmo lento.</span><span class="tag">REGRA</span></div>' +
+    '<div class="pend"><b>Energia da vila</b><span>Energia = casas ligadas. Hoje: 6 de 9 = 67% (Dinero Claro, as 3 Leonida Central, Leonida Clips e Leonida Cortes). Empire OFF, Quiet bloqueada, Wren em ritmo lento.</span><span class="tag">REGRA</span></div>' +
     '<div class="pend"><b>Próximo placar</b><span>Placar oficial do Dark Game sai toda segunda, junto do relatório semanal, sempre com números reais.</span><span class="tag">CADÊNCIA</span></div>';
   modalBg.classList.add("show");
 }
