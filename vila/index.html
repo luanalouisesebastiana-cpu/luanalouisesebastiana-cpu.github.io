@@ -54,6 +54,9 @@
   /* ============ LAYOUT ============ */
   #main { display:flex; flex:1; min-height:0; }
 
+  /* gaveta mobile: elementos escondidos no desktop */
+  #side-toggle, #side-close, #side-backdrop { display:none; }
+
   /* ============ SIDEBAR (clara) ============ */
   #sidebar {
     width:228px; min-width:228px; background:linear-gradient(#fbfcfd,#edf0f3);
@@ -156,6 +159,42 @@
     .pill small { display:none; }
     .hint { display:none; }
   }
+
+  /* ============ MOBILE (retrato, até 720px): sidebar vira gaveta recolhível
+     e a vila ocupa todo o espaço restante abaixo da HUD ============ */
+  @media (max-width:720px) {
+    #main { flex-direction:column; }
+    /* barrinha fina que substitui a sidebar recolhida */
+    #side-toggle {
+      display:flex; align-items:center; gap:8px; flex:none;
+      font-family:inherit; font-weight:800; font-size:13.5px; cursor:pointer;
+      background:#fff; color:#14181f; border:none; border-bottom:3px solid #14181f;
+      padding:8px 12px; text-align:left; position:relative; z-index:25;
+      box-shadow:0 2px 0 rgba(0,0,0,.2); width:100%;
+    }
+    #side-toggle:active { background:#e3e9f0; }
+    /* sidebar = gaveta fixa sobre a vila, fora do fluxo (não empurra o canvas) */
+    #sidebar {
+      position:fixed; top:0; left:0; z-index:90;
+      width:85vw; max-width:340px; min-width:0;
+      height:100vh; height:100dvh; max-height:none;
+      border-right:4px solid #14181f; border-bottom:none;
+      transform:translateX(-106%); transition:transform .28s ease;
+      padding-top:16px;
+    }
+    #sidebar.open { transform:translateX(0); box-shadow:8px 0 0 rgba(20,24,31,.35); }
+    #side-backdrop { position:fixed; inset:0; background:rgba(10,14,22,.5); z-index:85; }
+    #side-backdrop.show { display:block; }
+    #side-close {
+      display:block; position:absolute; top:8px; right:10px; z-index:2;
+      width:34px; height:34px; border:2px solid #14181f; border-radius:8px;
+      background:#fff; color:#14181f; font-size:16px; font-weight:900; cursor:pointer;
+      box-shadow:2px 2px 0 #14181f; font-family:inherit; line-height:1;
+    }
+    #sidebar input[type=text] { margin-right:40px; width:calc(100% - 40px); }
+    /* a vila ocupa TODO o restante da tela: sem faixa branca, sem vão vazio */
+    #stage { flex:1; min-height:0; width:100%; }
+  }
 </style>
 </head>
 <body>
@@ -181,8 +220,12 @@
   </header>
 
   <div id="main">
+    <!-- barrinha mobile: abre a gaveta da equipe (só aparece em telas estreitas) -->
+    <button id="side-toggle" aria-label="Abrir equipe e canais">☰ Equipe e canais</button>
+    <div id="side-backdrop"></div>
     <!-- ================= SIDEBAR ================= -->
     <aside id="sidebar">
+      <button id="side-close" aria-label="Fechar painel">✕</button>
       <input type="text" id="busca" placeholder="Buscar funcionário ou canal...">
       <div class="side-sec">
         <h3>Laboratório de Pesquisa <span class="n">2</span></h3>
@@ -302,6 +345,14 @@ function frameWorld() {
   cam.z = z;
   cam.x = (WORLD.w - canvas.width / z) / 2;
   cam.y = (WORLD.h - canvas.height / z) / 2;
+  clampCam();
+}
+function focusHouse1() {
+  /* mobile: abre enquadrando a Casa 1 grande, não a vila inteira minúscula */
+  var z = Math.min(canvas.width / (HOUSE_W + 90), canvas.height / (HOUSE_H + 70));
+  cam.z = Math.max(0.3, Math.min(1.1, z));
+  cam.x = HOUSE_X[0] + HOUSE_W / 2 - (canvas.width / cam.z) / 2;
+  cam.y = HOUSE_Y + HOUSE_H / 2 - (canvas.height / cam.z) / 2;
   clampCam();
 }
 function clampCam() {
@@ -983,9 +1034,25 @@ document.getElementById("btn-postar").onclick = function () {
   });
 })();
 
+/* ---------- sidebar mobile: gaveta recolhível (abre/fecha) ---------- */
+(function () {
+  var sb = document.getElementById("sidebar");
+  var bd = document.getElementById("side-backdrop");
+  function setDrawer(open) {
+    sb.classList.toggle("open", open);
+    bd.classList.toggle("show", open);
+  }
+  document.getElementById("side-toggle").addEventListener("click", function () { setDrawer(true); });
+  document.getElementById("side-close").addEventListener("click", function () { setDrawer(false); });
+  bd.addEventListener("click", function () { setDrawer(false); });
+  document.querySelectorAll("#sidebar .emp").forEach(function (el) {
+    el.addEventListener("click", function () { setDrawer(false); });
+  });
+})();
+
 /* ---------- start ---------- */
 resize();
-frameWorld();
+if (window.innerWidth <= 720) focusHouse1(); else frameWorld();
 requestAnimationFrame(loop);
 </script>
 </body>
